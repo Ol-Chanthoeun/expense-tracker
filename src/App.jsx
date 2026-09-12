@@ -14,14 +14,27 @@ function App() {
 
   const [editExpense, setEditExpense] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
+  const [errors, setErrors] = useState({});
 
   // Add Expense
   const handleAddExpense = () => {
-    if (
-      expenseName.trim() === "" ||
-      amount.trim() === "" ||
-      category.trim() === ""
-    ) {
+    const newErrors = {};
+
+    if (expenseName.trim() === "") {
+      newErrors.expenseName = "Expense name is required";
+    }
+
+    if (amount.trim() === "") {
+      newErrors.amount = "Amount is required";
+    }
+
+    if (category.trim() === "") {
+      newErrors.category = "Category is required";
+    }
+
+    setErrors(newErrors);
+
+    if (Object.keys(newErrors).length > 0) {
       return;
     }
 
@@ -38,6 +51,8 @@ function App() {
     setExpenseName("");
     setAmount("");
     setCategory("");
+
+    setErrors({});
   };
 
   // Delete Expense
@@ -171,12 +186,19 @@ function App() {
                 <input
                   type="text"
                   value={expenseName}
-                  onChange={(e) =>
-                    setExpenseName(e.target.value)
-                  }
+                  onChange={(e) => setExpenseName(e.target.value)}
                   placeholder="Example: Coffee"
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  className={`w-full rounded-lg border px-4 py-2.5 outline-none transition ${errors.expenseName
+                    ? "border-red-500 focus:ring-2 focus:ring-red-100"
+                    : "border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                    }`}
                 />
+
+                {errors.expenseName && (
+                  <p className="mt-1 text-sm text-red-500">
+                    {errors.expenseName}
+                  </p>
+                )}
               </div>
 
               {/* Amount */}
@@ -188,14 +210,19 @@ function App() {
                 <input
                   type="number"
                   value={amount}
-                  onChange={(e) =>
-                    setAmount(e.target.value)
-                  }
+                  onChange={(e) => setAmount(e.target.value)}
                   placeholder="Example: 5"
-                  min="0"
-                  step="0.01"
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  className={`w-full rounded-lg border px-4 py-2.5 outline-none transition ${errors.amount
+                    ? "border-red-500 focus:ring-2 focus:ring-red-100"
+                    : "border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                    }`}
                 />
+
+                {errors.amount && (
+                  <p className="mt-1 text-sm text-red-500">
+                    {errors.amount}
+                  </p>
+                )}
               </div>
 
               {/* Category */}
@@ -206,21 +233,24 @@ function App() {
 
                 <select
                   value={category}
-                  onChange={(e) =>
-                    setCategory(e.target.value)
-                  }
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  onChange={(e) => setCategory(e.target.value)}
+                  className={`w-full rounded-lg border px-4 py-2.5 outline-none transition ${errors.category
+                      ? "border-red-500 focus:ring-2 focus:ring-red-100"
+                      : "border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                    }`}
                 >
-                  <option value="">
-                    Select Category
-                  </option>
+                  <option value="">Select Category</option>
                   <option value="Food">Food</option>
                   <option value="Study">Study</option>
-                  <option value="Transport">
-                    Transport
-                  </option>
+                  <option value="Transport">Transport</option>
                   <option value="Other">Other</option>
                 </select>
+
+                {errors.category && (
+                  <p className="mt-1 text-sm text-red-500">
+                    {errors.category}
+                  </p>
+                )}
               </div>
 
               {/* Add / Update Button */}
