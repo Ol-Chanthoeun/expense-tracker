@@ -20,20 +20,27 @@ function App() {
   const handleAddExpense = () => {
     const newErrors = {};
 
+    // Validate Expense Name
     if (expenseName.trim() === "") {
-      newErrors.expenseName = "Expense name is required";
+      newErrors.expenseName = "Expense name is required.";
     }
 
+    // Validate Amount
     if (amount.trim() === "") {
-      newErrors.amount = "Amount is required";
+      newErrors.amount = "Amount is required.";
+    } else if (Number(amount) <= 0) {
+      newErrors.amount = "Amount must be greater than 0.";
     }
 
+    // Validate Category
     if (category.trim() === "") {
-      newErrors.category = "Category is required";
+      newErrors.category = "Category is required.";
     }
 
+    // Save Errors
     setErrors(newErrors);
 
+    // Stop if there are errors
     if (Object.keys(newErrors).length > 0) {
       return;
     }
@@ -73,15 +80,36 @@ function App() {
     setExpenseName(expense.name);
     setAmount(expense.amount);
     setCategory(expense.category);
+
+    setErrors({});
   };
 
   // Update Expense
   const handleUpdateExpense = () => {
-    if (
-      expenseName.trim() === "" ||
-      amount.trim() === "" ||
-      category.trim() === ""
-    ) {
+    const newErrors = {};
+
+    // Validate Expense Name
+    if (expenseName.trim() === "") {
+      newErrors.expenseName = "Expense name is required.";
+    }
+
+    // Validate Amount
+    if (amount.trim() === "") {
+      newErrors.amount = "Amount is required.";
+    } else if (Number(amount) <= 0) {
+      newErrors.amount = "Amount must be greater than 0.";
+    }
+
+    // Validate Category
+    if (category.trim() === "") {
+      newErrors.category = "Category is required.";
+    }
+
+    // Save Errors
+    setErrors(newErrors);
+
+    // Stop if there are errors
+    if (Object.keys(newErrors).length > 0) {
       return;
     }
 
@@ -107,6 +135,7 @@ function App() {
 
     // Exit edit mode
     setEditExpense(null);
+    setErrors({});
   };
 
   // Cancel Edit Expense
@@ -116,6 +145,7 @@ function App() {
     setExpenseName("");
     setAmount("");
     setCategory("");
+    setErrors({});
   };
 
   // Category Filter
