@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 function App() {
 
@@ -7,7 +7,14 @@ function App() {
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("");
 
-  const [expenses, setExpenses] = useState([]);
+  const [expenses, setExpenses] = useState(() => {
+    const savedExpenses = localStorage.getItem("expenses");
+    return savedExpenses ? JSON.parse(savedExpenses) : [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem("expenses", JSON.stringify(expenses));
+  }, [expenses]);
 
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [search, setSearch] = useState("");
@@ -15,6 +22,8 @@ function App() {
   const [editExpense, setEditExpense] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
   const [errors, setErrors] = useState({});
+  const [showClearModal, setShowClearModal] = useState(false);
+  const [sortOption, setSortOption] = useState("Default");
 
   // Add Expense
   const handleAddExpense = () => {
@@ -165,8 +174,30 @@ function App() {
         .includes(search.toLowerCase())
   );
 
+  // Sort Expenses
+  const sortedExpenses = [...searchedExpenses].sort((a, b) => {
+    switch (sortOption) {
+      case "LowToHigh":
+        return Number(a.amount) - Number(b.amount);
+      case "HighToLow":
+        return Number(b.amount) - Number(a.amount);
+      case "AZ":
+        return a.name.localeCompare(b.name);
+      case "ZA":
+        return b.name.localeCompare(a.name);  
+      default:
+        return 0;
+    }
+  });
+
+  // Clear All Expenses
+  const handleClearAll = () => {
+    setExpenses([]);
+
+  };
+
   // Total Expense
-  const totalExpense = expenses.reduce(
+  const totalExpense = searchedExpenses.reduce(
     (total, expense) => {
       return total + Number(expense.amount);
     },
@@ -351,7 +382,7 @@ function App() {
               </h2>
 
               <p className="mt-1 text-sm text-gray-500">
-                {expenses.length} expense(s)
+                Showing {searchedExpenses.length} of {expenses.length} expenses
               </p>
             </div>
 
@@ -359,7 +390,7 @@ function App() {
                 SEARCH + FILTER
             ========================== */}
             <div className="mb-6 rounded-2xl bg-white p-5 shadow-sm">
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-4 md:grid-cols-3">
 
                 {/* Search */}
                 <input
@@ -390,15 +421,42 @@ function App() {
                   </option>
                   <option value="Other">Other</option>
                 </select>
+
+                {/* Sort */}
+                <select
+                  value={sortOption}
+                  onChange={(e) => setSortOption(e.target.value)}
+                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                >
+                  <option value="Default">Default</option>
+                  <option value="LowToHigh">Amount: Low → High</option>
+                  <option value="HighToLow">Amount: High → Low</option>
+                  <option value="AZ">Name: A → Z</option>
+                  <option value="ZA">Name: Z → A</option>
+                </select>
+
               </div>
             </div>
+
 
             {/* =========================
                 EXPENSE LIST
             ========================== */}
+
+            {/* Clear All Button */}
+            {expenses.length > 0 && (
+              <div className="mb-4 flex justify-end">
+                <button
+                  onClick={() => setShowClearModal(true)}
+                  className="rounded-lg bg-red-50 px-4 py-2 text-sm font-medium text-red-600 transition hover:bg-red-100"
+                >
+                  Clear All
+                </button>
+              </div>
+            )}
             <div className="space-y-3">
 
-              {searchedExpenses.length === 0 ? (
+              {sortedExpenses.length === 0 ? (
                 <div className="rounded-2xl bg-white p-10 text-center shadow-sm">
                   <h3 className="text-lg font-semibold text-gray-700">
                     No expenses found
@@ -410,7 +468,7 @@ function App() {
                   </p>
                 </div>
               ) : (
-                searchedExpenses.map((expense) => (
+                sortedExpenses.map((expense) => (
                   <div
                     key={expense.id}
                     className="flex flex-col gap-4 rounded-2xl bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between"
@@ -509,6 +567,42 @@ function App() {
         )
       }
 
+      {/* ✅ Clear All Confirm Modal */}
+      {showClearModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+
+            <h2 className="text-xl font-bold text-gray-900">
+              Clear All Expenses?
+            </h2>
+
+            <p className="mt-2 text-gray-500">
+              Are you sure you want to clear all expenses?
+              This action cannot be undone.
+            </p>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={() => setShowClearModal(false)}
+                className="rounded-lg bg-gray-100 px-4 py-2 font-medium text-gray-700 hover:bg-gray-200"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={() => {
+                  handleClearAll();
+                  setShowClearModal(false);
+                }}
+                className="rounded-lg bg-red-600 px-4 py-2 font-medium text-white hover:bg-red-700"
+              >
+                Clear All
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
     </div >
   );
 }
